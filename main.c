@@ -30,7 +30,7 @@ byte b_read(address adr)
 void w_write(address adr, word val)
 {
 	mem[adr+1] = val>>8;
-	mem[adr] = val & 255;
+	mem[adr] = val;
 }
 
 word w_read(address adr)
@@ -88,8 +88,33 @@ void test_mem()
 	
 }
 
+void load_data()
+{
+	address adr, N;
+	byte b0;
+	while(2 == scanf("%04hx %04hx",&adr, &N))
+    {    
+        for(address i = 0; i < N; i++, adr++)
+        {
+            scanf("%04hhx", &b0);
+            b_write(adr, b0);
+        }
+    }
+}
+
+void mem_dump(address adr, int size)
+{
+	for(int i = 0; i < size; i += 2)
+	{
+		printf("%06o: %06o %04x\n", adr+i, w_read(adr+i), w_read(adr+i));
+	}
+}
 int main()
 {
     test_mem();
+	load_data();
+	address a = 0x0040;
+	int b = 10;
+	mem_dump(a,b);
     return 0;
 }
