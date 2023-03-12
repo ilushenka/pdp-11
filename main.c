@@ -132,12 +132,19 @@ void load_file(const char * filename)
     }
 }
 	
-int main()
+int main(int argc, char* argv[])
 {
     test_mem();
 	address a = 0x0040;
 	int b = 30;
-	load_file("data.txt");
+	if(argc >=2)
+		load_file(argv[1]);
+	else
+	{
+		printf("Т.к. название файла не было передано, программа будет считывать данные с командной строки\n");
+		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
+		load_data();
+	}
 	mem_dump(a,b);
     return 0;
 }
