@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <errno.h>
 
 typedef unsigned char byte;
 typedef unsigned short word;
@@ -88,7 +90,7 @@ void test_mem()
 	
 }
 
-void load_data()
+void load_data() //мб просто load_file сделать и при load_data stdin писать
 {
 	address adr, N;
 	byte b0;
@@ -109,12 +111,33 @@ void mem_dump(address adr, int size)
 		printf("%06o: %06o %04x\n", adr+i, w_read(adr+i), w_read(adr+i));
 	}
 }
+
+void load_file(const char * filename)
+{
+	FILE * fin = fopen(filename, "r");
+	if (fin == NULL)
+	{
+        perror(filename);
+        exit(errno);
+    }
+	address adr, N;
+	byte b0;
+	while(2 == fscanf(fin,"%04hx %04hx",&adr, &N))
+    {    
+        for(address i = 0; i < N; i++, adr++)
+        {
+            fscanf(fin, "%04hhx", &b0);
+            b_write(adr, b0);
+        }
+    }
+}
+	
 int main()
 {
     test_mem();
-	load_data();
 	address a = 0x0040;
-	int b = 10;
+	int b = 30;
+	load_file("data.txt");
 	mem_dump(a,b);
     return 0;
 }
