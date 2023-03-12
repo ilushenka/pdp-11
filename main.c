@@ -1,25 +1,46 @@
 #include <stdio.h>
 #include <assert.h>
 
-typedef char byte;
-typedef short word;
-typedef word adress;
+typedef unsigned char byte;
+typedef unsigned short word;
+typedef word address;
 
 #define MEMSIZE (64*1024)
 
 byte mem[MEMSIZE];
 
-void b_write(adress adr, byte val);
+void b_write(address adr, byte val);
 
-byte b_read(adress adr);
+byte b_read(address adr);
 
-void w_write(adress adr, word val);
+void w_write(address adr, word val);
 
-word w_read(adress adr);
+word w_read(address adr);
 
+void b_write(address adr, byte val)
+{
+	mem[adr] = val;
+}
+
+byte b_read(address adr)
+{
+	return mem[adr];
+}
+
+void w_write(address adr, word val)
+{
+	mem[adr+1] = val>>8;
+	mem[adr] = val & 255;
+}
+
+word w_read(address adr)
+{
+	return (word)mem[adr+1]<<8 | (word)mem[adr];
+}
+	
 void test_mem()
 {
-	adress a;
+	address a;
 	byte b0, b1, bres;
 	word w, wres;
 
@@ -29,16 +50,23 @@ void test_mem()
     b0 = 0x12;
     b_write(a, b0);
     bres = b_read(a);
-    // тут полезно написать отладочную печать a, b0, bres
     fprintf(stderr, "a=%06o b0=%hhx bres=%hhx\n", a, b0, bres);
     assert(b0 == bres);
-    // аналогично стоит проверить чтение и запись по нечетному адресу
 
+    fprintf(stderr, "Пишем и читаем байт по нечетному адресу\n");
+    a = 1;
+    b0 = 0x12;
+    b_write(a, b0);
+    bres = b_read(a);
+    fprintf(stderr, "a=%06o b0=%hhx bres=%hhx\n", a, b0, bres);
+    assert(b0 == bres);
+	
+	
 
     // пишем слово, читаем слово
     fprintf(stderr, "Пишем и читаем слово\n");
     a = 2;        // другой адрес
-    w = x3456;
+    w = 0x3456;
     w_write(a, w);
     wres = w_read(a);
     fprintf(stderr, "a=%06o w=%04x wres=%04x\n", a, w, wres);
