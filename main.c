@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdarg.h>
 
 typedef unsigned char byte;
 typedef unsigned short word;
@@ -9,7 +10,18 @@ typedef word address;
 
 #define MEMSIZE (64*1024)
 
+enum lognum
+{
+	ERROR,
+	INFO,
+	TRACE,
+	DEBUG,
+	MORE_DEBUG
+};
+
 byte mem[MEMSIZE];
+
+int log_level;
 
 void b_write(address adr, byte val);
 
@@ -19,27 +31,16 @@ void w_write(address adr, word val);
 
 word w_read(address adr);
 
-void b_write(address adr, byte val)
-{
-	mem[adr] = val;
-}
+void load_data();
 
-byte b_read(address adr)
-{
-	return mem[adr];
-}
+void mem_dump(address adr, int size);
 
-void w_write(address adr, word val)
-{
-	mem[adr+1] = val>>8;
-	mem[adr] = val;
-}
+void load_file(const char * filename);
 
-word w_read(address adr)
-{
-	return (word)mem[adr+1]<<8 | (word)mem[adr];
-}
-	
+void log(int level, char* message,...);
+
+int set_log_level(int level);
+
 void test_mem()
 {
 	address a;
@@ -90,6 +91,44 @@ void test_mem()
 	
 }
 
+int main(int argc, char* argv[])
+{
+    test_mem();
+	address a = 0x0040;
+	int b = 30;
+	if(argc >=2)
+		load_file(argv[1]);
+	else
+	{
+		printf("Т.к. название файла не было передано, программа будет считывать данные с командной строки\n");
+		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
+		load_data();
+	}
+	mem_dump(a,b);
+    return 0;
+}
+
+void b_write(address adr, byte val)
+{
+	mem[adr] = val;
+}
+
+byte b_read(address adr)
+{
+	return mem[adr];
+}
+
+void w_write(address adr, word val)
+{
+	mem[adr+1] = val>>8;
+	mem[adr] = val;
+}
+
+word w_read(address adr)
+{
+	return (word)mem[adr+1]<<8 | (word)mem[adr];
+}
+
 void load_data() //мб просто load_file сделать и при load_data stdin писать
 {
 	address adr, N;
@@ -131,20 +170,26 @@ void load_file(const char * filename)
         }
     }
 }
-	
-int main(int argc, char* argv[])
+
+void log(int level, char* message,...)
 {
-    test_mem();
-	address a = 0x0040;
-	int b = 30;
-	if(argc >=2)
-		load_file(argv[1]);
-	else
+	if(log_level >= level)
 	{
-		printf("Т.к. название файла не было передано, программа будет считывать данные с командной строки\n");
-		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
-		load_data();
+		va_list ap;
+		va_start(ap,message);
+		vprintf(message, ap);
+		va_end(ap);
 	}
-	mem_dump(a,b);
-    return 0;
 }
+
+int set_log_level(int level)
+{
+	int old_log_level = log_level;
+	
+	log_level = level;
+	
+	return old_log_level;
+}
+
+
+
