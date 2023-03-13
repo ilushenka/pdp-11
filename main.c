@@ -3,12 +3,15 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <string.h>
 
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef word address;
 
 #define MEMSIZE (64*1024)
+#define ADR_MIN 0
+#define ADR_MAX 65535
 
 enum lognum
 {
@@ -21,7 +24,7 @@ enum lognum
 
 byte mem[MEMSIZE];
 
-int log_level;
+int log_level = MORE_DEBUG;
 
 void b_write(address adr, byte val);
 
@@ -41,71 +44,81 @@ void log(int level, char* message,...);
 
 int set_log_level(int level);
 
+void introduction(int argc, char* argv[]);
+
 void test_mem()
 {
 	address a;
-	byte b0, b1, bres;
+	byte b0, b1, b0res, b1res;
 	word w, wres;
 
  // пишем байт, читаем байт
-    fprintf(stderr, "Пишем и читаем байт по четному адресу\n");
-    a = 0;
-    b0 = 0x12;
-    b_write(a, b0);
-    bres = b_read(a);
-    fprintf(stderr, "a=%06o b0=%hhx bres=%hhx\n", a, b0, bres);
-    assert(b0 == bres);
+	log(MORE_DEBUG, "Пишем и читаем байт по четному адресу\n");
+	a = 0;
+	b0 = 0x12;
+	b_write(a, b0);
+	b0res = b_read(a);
+	log(MORE_DEBUG, "a=%06o b0=%hhx b0res=%hhx\n", a, b0, b0res);
+	assert(b0 == b0res);
 
-    fprintf(stderr, "Пишем и читаем байт по нечетному адресу\n");
-    a = 1;
-    b0 = 0x12;
-    b_write(a, b0);
-    bres = b_read(a);
-    fprintf(stderr, "a=%06o b0=%hhx bres=%hhx\n", a, b0, bres);
-    assert(b0 == bres);
+	log(MORE_DEBUG, "Пишем и читаем байт по нечетному адресу\n");
+	a = 1;
+	b0 = 0x12;
+	b_write(a, b0);
+	b0res = b_read(a);
+	log(MORE_DEBUG, "a=%06o b0=%hhx b0res=%hhx\n", a, b0, b0res);
+	assert(b0 == b0res);
 	
 	
 
-    // пишем слово, читаем слово
-    fprintf(stderr, "Пишем и читаем слово\n");
-    a = 2;        // другой адрес
-    w = 0x3456;
-    w_write(a, w);
-    wres = w_read(a);
-    fprintf(stderr, "a=%06o w=%04x wres=%04x\n", a, w, wres);
-    assert(w == wres);
+	// пишем слово, читаем слово
+	log(MORE_DEBUG, "Пишем и читаем слово\n");
+	a = 2;		// другой адрес
+	w = 0x3456;
+	w_write(a, w);
+	wres = w_read(a);
+	log(MORE_DEBUG, "a=%06o w=%04x wres=%04x\n", a, w, wres);
+	assert(w == wres);
 
 
-    // пишем 2 байта, читаем 1 слово
-    fprintf(stderr, "Пишем 2 байта, читаем слово\n");
-    a = 4;        // другой адрес
-    w = 0xa1b2;
-    // little-endian, младшие разряды по меньшему адресу
-    b0 = 0xb2;
-    b1 = 0xa1;
-    b_write(a, b0);
-    b_write(a+1, b1);
-    wres = w_read(a);
-    fprintf(stderr, "a=%06o b1=%02hhx b0=%02hhx wres=%04x\n", a, b1, b0, wres);
-    assert(w == wres);
+	// пишем 2 байта, читаем 1 слово
+	log(MORE_DEBUG, "Пишем 2 байта, читаем слово\n");
+	a = 4;		// другой адрес
+	w = 0xa1b2;
+	// little-endian, младшие разряды по меньшему адресу
+	b0 = 0xb2;
+	b1 = 0xa1;
+	b_write(a, b0);
+	b_write(a+1, b1);
+	wres = w_read(a);
+	log(MORE_DEBUG, "a=%06o b1=%02hhx b0=%02hhx wres=%04x\n", a, b1, b0, wres);
+	assert(w == wres);
+	
+	
+	// пишем слово, читаем 2 байта
+	log(MORE_DEBUG,"Пишем слово, читаем 2 байта\n");
+	a = 6; // другой адрес
+	w = 0xb2d8;
+	// little-endian, младшие разряды по меньшему адресу
+	b0 = 0xd8;
+	b1 = 0xb2;
+	w_write(a, w);
+	b0res = b_read(a);
+	b1res = b_read(a+1);
+	log(MORE_DEBUG, "a = %06o w = %04x b0 = %02hhx b1 = %02hhx b0res = %02hhx b1res = %02hhx\n", a, w, b0, b1, b0res, b1res);
+	assert(b0res == b0 && b1res == b1);
 	
 }
 
 int main(int argc, char* argv[])
 {
-    test_mem();
+	test_mem();
 	address a = 0x0040;
 	int b = 30;
-	if(argc >=2)
-		load_file(argv[1]);
-	else
-	{
-		printf("Т.к. название файла не было передано, программа будет считывать данные с командной строки\n");
-		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
-		load_data();
-	}
+	introduction(argc, argv);
 	mem_dump(a,b);
-    return 0;
+	
+	return 0;
 }
 
 void b_write(address adr, byte val)
@@ -126,21 +139,22 @@ void w_write(address adr, word val)
 
 word w_read(address adr)
 {
+	//assert(sizeof(adr) == 2  && adr >= ADR_MIN && adr  <=ADR_MAX && Некорректное значение адреса); 
 	return (word)mem[adr+1]<<8 | (word)mem[adr];
 }
 
-void load_data() //мб просто load_file сделать и при load_data stdin писать
+void load_data(FILE * fin)
 {
 	address adr, N;
 	byte b0;
-	while(2 == scanf("%04hx %04hx",&adr, &N))
-    {    
-        for(address i = 0; i < N; i++, adr++)
-        {
-            scanf("%04hhx", &b0);
-            b_write(adr, b0);
-        }
-    }
+	while(2 == fscanf(fin,"%04hx %04hx",&adr, &N))
+	{	
+		for(address i = 0; i < N; i++, adr++)
+		{
+			fscanf(fin, "%04hhx", &b0);
+			b_write(adr, b0);
+		}
+	}
 }
 
 void mem_dump(address adr, int size)
@@ -156,19 +170,10 @@ void load_file(const char * filename)
 	FILE * fin = fopen(filename, "r");
 	if (fin == NULL)
 	{
-        perror(filename);
-        exit(errno);
-    }
-	address adr, N;
-	byte b0;
-	while(2 == fscanf(fin,"%04hx %04hx",&adr, &N))
-    {    
-        for(address i = 0; i < N; i++, adr++)
-        {
-            fscanf(fin, "%04hhx", &b0);
-            b_write(adr, b0);
-        }
-    }
+		perror(filename);
+		exit(errno);
+	}
+	load_data(fin);
 }
 
 void log(int level, char* message,...)
@@ -177,7 +182,7 @@ void log(int level, char* message,...)
 	{
 		va_list ap;
 		va_start(ap,message);
-		vprintf(message, ap);
+		vfprintf(stdout, message, ap);
 		va_end(ap);
 	}
 }
@@ -191,5 +196,14 @@ int set_log_level(int level)
 	return old_log_level;
 }
 
-
-
+void introduction(int argc, char* argv[])
+{
+	if(argc >=2 && (strstr(argv[1], "-t") == argv[1]))
+		load_file(argv[2]);
+	else
+	{
+		printf("Т.к. название файла не было передано, либо было передано некорректно, программа будет считывать данные с командной строки\n");
+		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
+		load_data(stdin);
+	}
+}
