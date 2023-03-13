@@ -1,3 +1,11 @@
+#pragma once
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <string.h>
+
 typedef unsigned char byte;
 typedef unsigned short word;
 typedef word address;
@@ -14,10 +22,6 @@ enum lognum
 	DEBUG,
 	MORE_DEBUG
 };
-
-byte mem[MEMSIZE];
-
-int log_level = MORE_DEBUG;
 
 void b_write(address adr, byte val);
 

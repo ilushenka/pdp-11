@@ -1,10 +1,8 @@
-#include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <string.h>
 #include "header.h"
+
+int log_level = MORE_DEBUG;
+
+word reg[8];      // reg[i] - это регистр Ri
 
 void test_mem()
 {
@@ -81,59 +79,16 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-void b_write(address adr, byte val)
+void introduction(int argc, char* argv[])
 {
-	mem[adr] = val;
-}
-
-byte b_read(address adr)
-{
-	return mem[adr];
-}
-
-void w_write(address adr, word val)
-{
-	mem[adr+1] = val>>8;
-	mem[adr] = val;
-}
-
-word w_read(address adr)
-{
-	//assert(sizeof(adr) == 2  && adr >= ADR_MIN && adr  <= ADR_MAX && Некорректное значение адреса); 
-	return (word)mem[adr+1]<<8 | (word)mem[adr];
-}
-
-void load_data(FILE * fin)
-{
-	address adr, N;
-	byte b0;
-	while(2 == fscanf(fin,"%04hx %04hx",&adr, &N))
-	{	
-		for(address i = 0; i < N; i++, adr++)
-		{
-			fscanf(fin, "%04hhx", &b0);
-			b_write(adr, b0);
-		}
-	}
-}
-
-void mem_dump(address adr, int size)
-{
-	for(int i = 0; i < size; i += 2)
+	if(argc >=2 && (strstr(argv[1], "-t") == argv[1]))
+		load_file(argv[2]);
+	else
 	{
-		printf("%06o: %06o %04x\n", adr+i, w_read(adr+i), w_read(adr+i));
+		printf("Т.к. название файла не было передано, либо было передано некорректно, программа будет считывать данные с командной строки\n");
+		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
+		load_data(stdin);
 	}
-}
-
-void load_file(const char * filename)
-{
-	FILE * fin = fopen(filename, "r");
-	if (fin == NULL)
-	{
-		perror(filename);
-		exit(errno);
-	}
-	load_data(fin);
 }
 
 void log(int level, char* message,...)
@@ -156,14 +111,3 @@ int set_log_level(int level)
 	return old_log_level;
 }
 
-void introduction(int argc, char* argv[])
-{
-	if(argc >=2 && (strstr(argv[1], "-t") == argv[1]))
-		load_file(argv[2]);
-	else
-	{
-		printf("Т.к. название файла не было передано, либо было передано некорректно, программа будет считывать данные с командной строки\n");
-		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
-		load_data(stdin);
-	}
-}
