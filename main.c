@@ -2,14 +2,55 @@
 
 int log_level = MORE_DEBUG;
 
-word reg[8];      // reg[i] - это регистр Ri
+int main(int argc, char* argv[])
+{
+	introduction(argc, argv);
+	test_mem();
+	run();
+	address a = 0x0040;
+	int b = 30;
+	mem_dump(a,b);
+	
+	return 0;
+}
+
+void introduction(int argc, char* argv[])
+{
+	if(argc >=2 && (strstr(argv[1], "-t") == argv[1]))
+		load_file(argv[2]);
+	else
+	{
+		printf("Т.к. название файла не было передано, либо было передано некорректно, программа будет считывать данные с командной строки\n");
+		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
+		load_data(stdin);
+	}
+}
+
+void log(int level, char* message,...)
+{
+	if(log_level >= level)
+	{
+		va_list ap;
+		va_start(ap,message);
+		vfprintf(stdout, message, ap);
+		va_end(ap);
+	}
+}
+
+int set_log_level(int level)
+{
+	int old_log_level = log_level;
+	
+	log_level = level;
+	
+	return old_log_level;
+}
 
 void test_mem()
 {
 	address a;
 	byte b0, b1, b0res, b1res;
 	word w, wres;
-
  // пишем байт, читаем байт
 	log(MORE_DEBUG, "Пишем и читаем байт по четному адресу\n");
 	a = 0;
@@ -66,48 +107,9 @@ void test_mem()
 	log(MORE_DEBUG, "a = %06o w = %04x b0 = %02hhx b1 = %02hhx b0res = %02hhx b1res = %02hhx\n", a, w, b0, b1, b0res, b1res);
 	assert(b0res == b0 && b1res == b1);
 	
-}
-
-int main(int argc, char* argv[])
-{
-	test_mem();
-	address a = 0x0040;
-	int b = 30;
-	introduction(argc, argv);
-	mem_dump(a,b);
+	//проверка на halt
+	/*log(TRACE, "Проверка на работу halt");
+	run()
+	*/
 	
-	return 0;
 }
-
-void introduction(int argc, char* argv[])
-{
-	if(argc >=2 && (strstr(argv[1], "-t") == argv[1]))
-		load_file(argv[2]);
-	else
-	{
-		printf("Т.к. название файла не было передано, либо было передано некорректно, программа будет считывать данные с командной строки\n");
-		printf("Для прочтения данных из файла, запустите программу с дополнением в конце \"-t название_файла\"\n");
-		load_data(stdin);
-	}
-}
-
-void log(int level, char* message,...)
-{
-	if(log_level >= level)
-	{
-		va_list ap;
-		va_start(ap,message);
-		vfprintf(stdout, message, ap);
-		va_end(ap);
-	}
-}
-
-int set_log_level(int level)
-{
-	int old_log_level = log_level;
-	
-	log_level = level;
-	
-	return old_log_level;
-}
-

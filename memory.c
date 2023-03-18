@@ -1,7 +1,6 @@
 #include "header.h"
 
-byte mem[MEMSIZE];
-
+static byte mem[MEMSIZE];
 
 void b_write(address adr, byte val)
 {
@@ -21,7 +20,7 @@ void w_write(address adr, word val)
 
 word w_read(address adr)
 {
-	//assert(sizeof(adr) == 2  && adr >= ADR_MIN && adr  <= ADR_MAX && Некорректное значение адреса); 
+	assert(sizeof(adr) == 2  && adr >= ADR_MIN && adr  <= ADR_MAX && "Некорректное значение адреса"); 
 	return (word)mem[adr+1]<<8 | (word)mem[adr];
 }
 
@@ -31,6 +30,7 @@ void load_data(FILE * fin)
 	byte b0;
 	while(2 == fscanf(fin,"%04hx %04hx",&adr, &N))
 	{	
+		log(MORE_DEBUG, "%04hx %04hx", adr, N);
 		for(address i = 0; i < N; i++, adr++)
 		{
 			fscanf(fin, "%04hhx", &b0);
