@@ -1,16 +1,17 @@
 #include "header.h"
+#include "run.h"
+#include "tests.h"
 
-int log_level = MORE_DEBUG;
+int logger_level = TRACE;
 
 int main(int argc, char* argv[])
 {
+	all_tests();
 	introduction(argc, argv);
-	test_mem();
 	run();
 	address a = 0x0040;
 	int b = 30;
 	mem_dump(a,b);
-	
 	return 0;
 }
 
@@ -26,9 +27,9 @@ void introduction(int argc, char* argv[])
 	}
 }
 
-void log(int level, char* message,...)
+void logger(int level, char* message,...)
 {
-	if(log_level >= level)
+	if(logger_level >= level)
 	{
 		va_list ap;
 		va_start(ap,message);
@@ -37,79 +38,11 @@ void log(int level, char* message,...)
 	}
 }
 
-int set_log_level(int level)
+int set_logger_level(int level)
 {
-	int old_log_level = log_level;
+	int old_logger_level = logger_level;
 	
-	log_level = level;
+	logger_level = level;
 	
-	return old_log_level;
-}
-
-void test_mem()
-{
-	address a;
-	byte b0, b1, b0res, b1res;
-	word w, wres;
- // пишем байт, читаем байт
-	log(MORE_DEBUG, "Пишем и читаем байт по четному адресу\n");
-	a = 0;
-	b0 = 0x12;
-	b_write(a, b0);
-	b0res = b_read(a);
-	log(MORE_DEBUG, "a=%06o b0=%hhx b0res=%hhx\n", a, b0, b0res);
-	assert(b0 == b0res);
-
-	log(MORE_DEBUG, "Пишем и читаем байт по нечетному адресу\n");
-	a = 1;
-	b0 = 0x12;
-	b_write(a, b0);
-	b0res = b_read(a);
-	log(MORE_DEBUG, "a=%06o b0=%hhx b0res=%hhx\n", a, b0, b0res);
-	assert(b0 == b0res);
-	
-	
-
-	// пишем слово, читаем слово
-	log(MORE_DEBUG, "Пишем и читаем слово\n");
-	a = 2;		// другой адрес
-	w = 0x3456;
-	w_write(a, w);
-	wres = w_read(a);
-	log(MORE_DEBUG, "a=%06o w=%04x wres=%04x\n", a, w, wres);
-	assert(w == wres);
-
-
-	// пишем 2 байта, читаем 1 слово
-	log(MORE_DEBUG, "Пишем 2 байта, читаем слово\n");
-	a = 4;		// другой адрес
-	w = 0xa1b2;
-	// little-endian, младшие разряды по меньшему адресу
-	b0 = 0xb2;
-	b1 = 0xa1;
-	b_write(a, b0);
-	b_write(a+1, b1);
-	wres = w_read(a);
-	log(MORE_DEBUG, "a=%06o b1=%02hhx b0=%02hhx wres=%04x\n", a, b1, b0, wres);
-	assert(w == wres);
-	
-	
-	// пишем слово, читаем 2 байта
-	log(MORE_DEBUG,"Пишем слово, читаем 2 байта\n");
-	a = 6; // другой адрес
-	w = 0xb2d8;
-	// little-endian, младшие разряды по меньшему адресу
-	b0 = 0xd8;
-	b1 = 0xb2;
-	w_write(a, w);
-	b0res = b_read(a);
-	b1res = b_read(a+1);
-	log(MORE_DEBUG, "a = %06o w = %04x b0 = %02hhx b1 = %02hhx b0res = %02hhx b1res = %02hhx\n", a, w, b0, b1, b0res, b1res);
-	assert(b0res == b0 && b1res == b1);
-	
-	//проверка на halt
-	/*log(TRACE, "Проверка на работу halt");
-	run()
-	*/
-	
+	return old_logger_level;
 }

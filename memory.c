@@ -2,6 +2,8 @@
 
 static byte mem[MEMSIZE];
 
+word reg[REGSIZE];    // reg[i] - это регистр Ri
+
 void b_write(address adr, byte val)
 {
 	mem[adr] = val;
@@ -14,6 +16,19 @@ byte b_read(address adr)
 
 void w_write(address adr, word val)
 {
+	if (adr < 8)
+	{
+        reg[adr] = val;
+        return;
+    }
+	
+	if(adr % 2 != 0)
+	{
+		logger(ERROR, "Попытка записать слово по нечетному адресу!\n");
+		logger(DEBUG, "adr:%04hx, val:%04hx\n", adr, val);
+		exit(1);
+	}
+	
 	mem[adr+1] = val>>8;
 	mem[adr] = val;
 }
@@ -30,7 +45,7 @@ void load_data(FILE * fin)
 	byte b0;
 	while(2 == fscanf(fin,"%04hx %04hx",&adr, &N))
 	{	
-		log(MORE_DEBUG, "%04hx %04hx", adr, N);
+		logger(MORE_DEBUG, "%04hx %04hx\n", adr, N);
 		for(address i = 0; i < N; i++, adr++)
 		{
 			fscanf(fin, "%04hhx", &b0);
@@ -56,6 +71,13 @@ void load_file(const char * filename)
 		exit(errno);
 	}
 	load_data(fin);
+}
+
+void mem_clear()
+{
+	memset(mem,0,sizeof(mem)/sizeof(mem[0]));
+	for(int i = 0; i < REGSIZE; i++)
+		reg[i] = 0;
 }
 
 
