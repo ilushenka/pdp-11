@@ -1,4 +1,5 @@
 #include "header.h"
+#pragma once
 
 void all_tests();
 

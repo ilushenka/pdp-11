@@ -35,6 +35,8 @@ void do_add();
 
 void do_mov();
 
+void do_movb();
+
 void do_nothing();
 
 void reg_dump();
@@ -48,3 +50,5 @@ Argument get_mr(word w);
 Command parse_cmd(word w);
 
 word read_cmd();
+
+void check_b_or_w_operation(Argument * res);

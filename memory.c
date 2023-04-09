@@ -6,11 +6,18 @@ word reg[REGSIZE];    // reg[i] - это регистр Ri
 
 void b_write(address adr, byte val)
 {
+	if (adr < 8)
+	{
+		reg[adr] = (word)val;
+		return;
+	}
 	mem[adr] = val;
 }
 
 byte b_read(address adr)
 {
+	if(adr < 8)
+		return (reg[adr] & 255);
 	return mem[adr];
 }
 
