@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <string.h>
-#include "mem.h"
 
 #define ADR_MIN 0
 #define ADR_MAX 65535

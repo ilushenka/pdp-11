@@ -1,5 +1,5 @@
 #include "header.h"
-
+#include "mem.h"
 static byte mem[MEMSIZE];
 
 word reg[REGSIZE];    // reg[i] - это регистр Ri
@@ -8,7 +8,11 @@ void b_write(address adr, byte val)
 {
 	if (adr < 8)
 	{
-		reg[adr] = (word)val;
+		if (val>>7 == 0)
+			reg[adr] = (word)(val & OPCD_FOR_PL);
+		else
+			reg[adr] = val | OPCD_FOR_NEG;
+		logger(MORE_DEBUG," ---b_write:reg:%o---\n", reg[adr]);
 		return;
 	}
 	mem[adr] = val;
@@ -16,8 +20,8 @@ void b_write(address adr, byte val)
 
 byte b_read(address adr)
 {
-	if(adr < 8)
-		return (reg[adr] & 255);
+	if (adr < 8)
+		return (reg[adr] & 0xffff);
 	return mem[adr];
 }
 
@@ -25,9 +29,9 @@ void w_write(address adr, word val)
 {
 	if (adr < 8)
 	{
-        reg[adr] = val;
-        return;
-    }
+		reg[adr] = val;
+		return;
+	}
 	
 	if(adr % 2 != 0)
 	{
@@ -86,17 +90,4 @@ void mem_clear()
 	for(int i = 0; i < REGSIZE; i++)
 		reg[i] = 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 

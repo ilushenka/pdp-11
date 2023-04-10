@@ -9,8 +9,10 @@ typedef word address;
 #define REGSIZE 8
 #define MEMSIZE (64*1024)
 #define pc reg[7]
+#define OPCD_FOR_PL 255
+#define OPCD_FOR_NEG 255<<8
 
-extern word reg[REGSIZE];    // reg[i] - это регистр Ri
+extern word reg[REGSIZE];	// reg[i] - это регистр Ri
 
 void b_write(address adr, byte val);
 

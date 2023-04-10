@@ -48,7 +48,6 @@ Command parse_cmd(word w)
 				logger(TRACE, "%s ", cmd[i].name);
 				if(strcmp(cmd[i].name, "movb") == 0)
 				{
-					logger(TRACE,"aasdasdsad\n\n");
 					B_or_W = 0;
 				}
 				if((cmd[i].params & HAS_SS) == HAS_SS)
@@ -82,7 +81,7 @@ void do_mov()
 
 void do_movb()
 {
-	b_write(dd.adr, ss.val);
+	b_write(dd.adr, (byte)ss.val);
 	logger(MORE_DEBUG, "---to_val:%o, to_adr:%o, from_val:%o, from_adr:%o---\n", b_read(dd.adr), dd.adr, ss.val, ss.adr);
 }
 
@@ -161,9 +160,9 @@ Argument get_mr(word w)
 		check_b_or_w_operation(&res);
 		logger(TRACE, "@-(R%d)+ ", r);
 		break;
-    default:
+	default:
 		logger(ERROR, "\n");
-        logger(ERROR, "Мода %d еще не была реализована!\n", m);
+		logger(ERROR, "Мода %d еще не была реализована!\n", m);
 		//exit(1);
 	}
 	return res;

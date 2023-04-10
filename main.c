@@ -2,7 +2,7 @@
 #include "run.h"
 #include "tests.h"
 
-int logger_level = MORE_DEBUG;
+int logger_level = TRACE;
 
 int main(int argc, char* argv[])
 {

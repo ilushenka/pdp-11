@@ -1,4 +1,4 @@
-#include "header.h"
+#pragma once
 #define MAX_NN 63
 
 enum
