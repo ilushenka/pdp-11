@@ -1,5 +1,6 @@
 #include "header.h"
 #include "mem.h"
+
 static byte mem[MEMSIZE];
 
 word reg[REGSIZE];    // reg[i] - это регистр Ri
