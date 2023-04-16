@@ -100,7 +100,7 @@ void test_ident_mov()
 	logger(TRACE, "Проверка определения команды mov\n");
 	Command test_cmd = parse_cmd(0017654);
 	assert(!strcmp(test_cmd.name, "mov"));
-	logger(TRACE, "Тест работы move пройден\n");
+	logger(TRACE, "Тест работы mov пройден\n");
 }
 
 void test_ident_add()
