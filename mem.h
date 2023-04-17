@@ -11,6 +11,8 @@ typedef word address;
 #define pc reg[7]
 #define OPCD_FOR_PL 255
 #define OPCD_FOR_NEG 255<<8
+#define ostat 0177564
+#define odata 0177566
 
 extern word reg[REGSIZE];	// reg[i] - это регистр Ri
 
@@ -27,3 +29,5 @@ void load_data();
 void mem_dump(address adr, int size);
 
 void load_file(const char * filename);
+
+void set_ostat();

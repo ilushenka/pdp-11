@@ -1,4 +1,5 @@
 #include "run.h"
+
 void do_halt()
 {
 	logger(TRACE, "\n");
@@ -27,8 +28,9 @@ void do_add()
 {
 	logger(MORE_DEBUG, "---BEFORE OPERATION ADD:dd.adr:%o, dd.val:%o, ss.val:%o, w.adr:%o, b.adr:%o---\n", dd.adr, dd.val, ss.val, w_read(dd.adr), b_read(dd.adr));
 	w_write(dd.adr, (ss.val+dd.val));
+	longword res = ss.val + dd.val;
 	check_NZ_flags((ss.val+dd.val));
-	check_C_flag(ss.val, dd.val);
+	check_C_flag(res);
 	logger(MORE_DEBUG, "---AFTER OPERATION ADD:dd.adr:%o, dd.val:%o, ss.val:%o, w.adr:%o, b.adr:%o, reg:%o---\n", dd.adr, dd.val, ss.val, w_read(dd.adr), b_read(dd.adr), reg[dd.adr]);
 }
 
@@ -44,26 +46,17 @@ void do_nothing()
 {
 }
 
-void do_TST(word d)
+void do_TST()
 {
-	check_NZ_flags(d);
+	check_NZ_flags(dd.val);
 	flag_C = 0;
 }
 
-void do_TSTb(byte d)
+void do_CMP()
 {
-	do_TST((word)(d)<<8);
-}
-
-void do_CMP(word s, word d)
-{
-	check_NZ_flags((s-d));
-	check_C_flag(s,(-d));
-}
-
-void do_CMPb(byte s, byte d)
-{
-	do_CMP(((word)(s)<<8),((word)(d)<<8)); 
+	check_NZ_flags((ss.val-dd.val));
+	longword res = (longword)ss.val - dd.val;
+	check_C_flag(res);
 }
 
 void do_br()

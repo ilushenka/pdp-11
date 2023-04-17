@@ -7,6 +7,7 @@ int logger_level = TRACE;
 int main(int argc, char* argv[])
 {
 	all_tests();
+	set_ostat();
 	introduction(argc, argv);
 	run();
 	address a = 0x0040;

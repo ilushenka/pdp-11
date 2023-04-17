@@ -14,10 +14,10 @@ Command cmd[] =
 	{0177400, 0100400, "bmi", do_bmi, HAS_XX},
 	{0177400, 0001000, "bne", do_bne, HAS_XX},
 	{0177400, 0100000, "bpl", do_bpl, HAS_XX},
-	// {0177700, 0005700, "tst", do_TST, HAS_DD},
-	// {0177700, 0105700, "tstb", do_TSTb, HAS_DD},
-	// {0170000, 0120000, "cmpb", do_CMPb, HAS_SS | HAS_DD},
-	// {0170000, 0020000, "cmp", do_CMP, HAS_SS | HAS_DD},
+	{0177700, 0005700, "tst", do_TST, HAS_DD},
+	{0177700, 0105700, "tstb", do_TST, HAS_DD},
+	{0170000, 0120000, "cmpb", do_CMP, HAS_SS | HAS_DD},
+	{0170000, 0020000, "cmp", do_CMP, HAS_SS | HAS_DD},
 	{0000000, 0000000, "unknown", do_nothing, NO_PARAMS} //Этот элемент массива оставлять в самом конце, т.к. он нужен для выхода из цикла
 };
 
@@ -41,6 +41,7 @@ void run()
 		// reg_dump();
 		oper = parse_cmd(read_cmd());
 		oper.do_command();
+		logger(TRACE, "%d %d %d %o", flag_Z, flag_N, flag_C, b_read(ostat));
 		logger(TRACE, "\n");
 	}	
 }
@@ -62,10 +63,8 @@ Command parse_cmd(word w)
 			{	
 				pc += 2;
 				logger(TRACE, "%s ", cmd[i].name);
-				if(strcmp(cmd[i].name, "movb") == 0)
-				{
+				if((w>>15) & 1)
 					B_or_W = 0;
-				}
 				if((cmd[i].params & HAS_SS) == HAS_SS)
 					ss = get_mr(w>>6);
 				if((cmd[i].params & HAS_DD) == HAS_DD)	
@@ -123,7 +122,7 @@ Argument get_mr(word w)
 		check_b_or_w_operation(&res);
 		reg[r] += 2;
 		if(r == 7)
-			logger(TRACE, "@#%o ", res.val);
+			logger(TRACE, "@#%o ", res.adr);
 		else
 			logger(TRACE, "@(R%d)+ ", r);
 		break;
@@ -177,23 +176,13 @@ void check_b_or_w_operation(Argument * res)
 
 void check_NZ_flags(word res)
 {
-	if(res == 0)
-		flag_Z = 1;
-	else
-		flag_Z = 0;
-	
-	if(res>>15 == 1)
-		flag_N = 1;
-	else
-		flag_N = 0;
+	flag_Z = res == 0;
+	flag_N = (res>>(B_or_W ? 15 : 7)) & 1;
 }
 
-void check_C_flag(word a1, word a2)
-{
-	if((unsigned int)(a1+a2)>>16 == 1)
-		flag_C = 1;
-	else
-		flag_C = 0;
+void check_C_flag(longword res)
+{	
+	flag_C = (res>>(B_or_W ? 15 : 7)) == 1;
 }
 
 void get_XX(word w)

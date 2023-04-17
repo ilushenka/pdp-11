@@ -11,6 +11,8 @@ typedef struct
 	word val;
 } Argument;
 
+typedef unsigned int longword;
+
 extern Argument ss, dd, reg_num;
 extern int flag_Z, flag_C, flag_N;
 extern signed char XX;
@@ -31,6 +33,6 @@ void check_b_or_w_operation(Argument * res);
 
 void check_NZ_flags(word res);
 
-void check_C_flag(word a1, word a2);
+void check_C_flag(longword res);
 
 void get_XX(word w);

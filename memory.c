@@ -16,6 +16,8 @@ void b_write(address adr, byte val)
 		logger(MORE_DEBUG," ---b_write:reg:%o---\n", reg[adr]);
 		return;
 	}
+	if(adr == odata)
+		printf("%c", val);
 	mem[adr] = val;
 }
 
@@ -40,6 +42,9 @@ void w_write(address adr, word val)
 		logger(DEBUG, "adr:%04hx, val:%04hx\n", adr, val);
 		exit(1);
 	}
+	
+	if(adr == odata)
+		printf("%c", val);
 	
 	mem[adr+1] = val>>8;
 	mem[adr] = val;
@@ -92,3 +97,8 @@ void mem_clear()
 		reg[i] = 0;
 }
 
+void set_ostat()
+{
+	// b_write(ostat, (1<<7));
+	w_write(ostat, 0xFF);
+}

@@ -43,12 +43,8 @@ void do_bmi();
 
 void do_bpl();
 
-void do_TST(word d);
+void do_TST();
 
-void do_TSTb(byte d);
-
-void do_CMP(word s, word d);
-
-void do_CMPb(byte s, byte d);
+void do_CMP();
 
 void do_sob();
