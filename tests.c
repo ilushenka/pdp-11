@@ -14,6 +14,9 @@ void all_tests()
 	test_mode1_toreg();
 	test_mode1_fromreg();
 	test_mode1_fromregtoreg();
+	test_mode2_toreg();
+	test_mode2_fromreg();
+	test_mode2_fromregtoreg();
 	test_mode3_toreg();
 	test_mode3_fromreg();
 	test_mode3_fromregtoreg();
@@ -23,6 +26,13 @@ void all_tests()
 	test_mode5_toreg();
 	test_mode5_fromreg();
 	test_mode5_fromregtoreg();
+	test_mode6_toreg();
+	test_mode6_fromreg();
+	test_mode6_fromregtoreg();
+
+	test_mode2_workwithsp();
+	test_mode4_workwithsp();
+	
 	mem_clear();
 }
 
@@ -100,7 +110,6 @@ void test_ident_mov()
 	logger(TRACE, "Проверка определения команды mov\n");
 	Command test_cmd = parse_cmd(0017654);
 	assert(!strcmp(test_cmd.name, "mov"));
-	logger(TRACE, "Тест работы mov пройден\n");
 }
 
 void test_ident_add()
@@ -108,7 +117,6 @@ void test_ident_add()
 	logger(TRACE, "Проверка определения команды add\n");
 	Command test_cmd = parse_cmd(0067654);
 	assert(!strcmp(test_cmd.name, "add"));
-	logger(TRACE, "Тест работы add пройден\n");
 }
 
 void test_ident_halt()
@@ -116,7 +124,6 @@ void test_ident_halt()
 	logger(TRACE, "Проверка определения команды halt\n");
 	Command test_cmd = parse_cmd(0000000);
 	assert(!strcmp(test_cmd.name, "halt"));
-	logger(TRACE, "Тест работы halt пройден\n");
 }
 
 // тест, что мы разобрали правильно аргументы ss и dd в mov R5, R3
@@ -131,7 +138,6 @@ void test_mode0()
 	assert(ss.adr == 5);
 	assert(dd.val == 12);
 	assert(dd.adr == 3);
-	logger(TRACE, "Тест моды 0 пройден\n");
 }
 // тест, что mov и мода 0 работают верно в mov R5, R3
 void test_mov()
@@ -143,7 +149,6 @@ void test_mov()
 	test_cmd.do_command();
 	assert(reg[3] == 34);
 	assert(reg[5] == 34);
-	logger(TRACE, "Тест работы mov с модой 0 пройден\n");
 }
 
 void test_add()
@@ -156,7 +161,6 @@ void test_add()
 	logger(TRACE, "reg[3]:%d, reg[5]:%d\n", reg[3], reg[5]);
 	assert(reg[3] == 46);
 	assert(reg[5] == 34);
-	logger(TRACE, "Тест работы add с модой 0 пройден\n");
 }
 
 // тест, что мы разобрали правильно аргументы ss и dd в mov (R5), R3
@@ -232,8 +236,6 @@ void test_mode1_fromregtoreg()
 	// проверяем, что значение регистра не изменилось
 	assert(reg[3] == 0206);
 	assert(reg[5] == 0204);
-
-	logger(TRACE, "Тесты моды 1 пройдены\n");
 }
 
 // тест, что мы разобрали правильно аргументы ss и dd в mov (R5), R3
@@ -310,7 +312,32 @@ void test_mode2_fromregtoreg()
 	assert(reg[3] == 0210);
 	assert(reg[5] == 0206);
 
-	logger(TRACE, "Тесты моды 2 пройдены\n");
+}
+
+void test_mode2_workwithsp()
+{
+	logger(TRACE, "Тест на работу 2 моды с 6 регистром(sp) вида movb (R6)+ (R2)+\n");
+	
+	//setup
+	reg[6] = 0340;  // ss
+	reg[2] = 0344;	// dd
+	b_write(0340, 34);
+	b_write(0344, 12);
+
+	Command test_cmd = parse_cmd(0112622);
+
+	assert(dd.val == 12);
+	assert(dd.adr == 0344);
+	assert(ss.val == 34);
+	assert(ss.adr == 0340);
+
+	test_cmd.do_command();
+
+	assert(b_read(0344) == 34); //проверяем прошло ли успешно копирование
+
+	// проверяем, что значение регистра 6 увеличилось на 2, а регистра 2 - на 1
+	assert(reg[2] == 0345);
+	assert(reg[6] == 0342);
 }
 
 void test_mode3_toreg()
@@ -389,8 +416,6 @@ void test_mode3_fromregtoreg()
 	// проверяем, что значение регистра увеличилось на 2
 	assert(reg[3] == 0230);
 	assert(reg[5] == 0224);
-
-	logger(TRACE, "Тесты моды 3 пройдены!\n");
 }
 
 void test_mode4_toreg()
@@ -444,7 +469,7 @@ void test_mode4_fromregtoreg()
 {
 	logger(TRACE, "Тест моды 4 вида mov -(R5), -(R3)\n");
    
-   // setup
+	// setup
 	reg[5] = 0234;  // ss
 	reg[3] = 0240;	// dd
 	w_write(0232, 34);
@@ -462,12 +487,37 @@ void test_mode4_fromregtoreg()
 	assert(w_read(0232) == 34); //проверяем прошло ли успешно копирование
 	assert(w_read(0236) == 34);
 
-	// проверяем, что значение регистра увеличилось на 2
+	// проверяем, что значение регистра уменьшилось на 2
 	assert(reg[3] == 0236);
 	assert(reg[5] == 0232);
-	logger(TRACE, "Тесты моды 4 пройдены!\n");
 }
 
+void test_mode4_workwithsp()
+{
+	logger(TRACE, "Тест на работу 4 моды с 6 регистром(sp) вида movb -(R6), -(R3)\n");
+   
+	// setup
+	reg[6] = 0350;  // ss
+	reg[3] = 0356;	// dd
+	b_write(0346, 34);
+	b_write(0355, 12);
+
+	Command test_cmd = parse_cmd(0114643);
+
+	assert(dd.val == 12);
+	assert(dd.adr == 0355);
+	assert(ss.val == 34);
+	assert(ss.adr == 0346);
+
+	test_cmd.do_command();
+
+	assert(b_read(0355) == 34); //проверяем прошло ли успешно копирование
+	assert(b_read(0346) == 34);
+
+	// проверяем, что значение регистра уменьшилось на 2 для регистра 3, на 1 для регистро 6(sp)
+	assert(reg[3] == 0355);
+	assert(reg[6] == 0346);
+}
 void test_mode5_toreg()
 {
 	logger(TRACE, "Тест моды 5 вида mov R5, @-(R3)\n");
@@ -541,5 +591,82 @@ void test_mode5_fromregtoreg()
 
 	assert(reg[3] == 0274);
 	assert(reg[5] == 0266);
+}
 
+void test_mode6_toreg()
+{
+	logger(TRACE, "Тест моды 6 вида mov R6, 2(R3)\n");
+	// setup
+	reg[5] = 34;  // ss
+	reg[3] = 0300;	// dd
+	pc = 01000;
+	w_write(01002, 02);
+	w_write(0302, 12);
+
+	Command test_cmd = parse_cmd(0010563);
+
+	assert(dd.val == 12);
+	assert(dd.adr == 0302);
+	assert(ss.val == 34);
+	assert(ss.adr == 5);
+
+	test_cmd.do_command();
+
+	assert(w_read(0302) == 34); //проверяем прошло ли успешно копирование
+
+	assert(reg[3] == 0300);
+	assert(reg[5] == 34);
+
+}
+
+void test_mode6_fromreg()
+{
+	logger(TRACE, "Тест моды 6 вида mov 4(R5), R3\n");
+	// setup
+	reg[5] = 0304;  // ss
+	reg[3] = 12;	// dd
+	pc = 01000;
+	w_write(01002, 04);
+	w_write(0310, 34);
+
+	Command test_cmd = parse_cmd(0016503);
+
+	assert(dd.val == 12);
+	assert(dd.adr == 3);
+	assert(ss.val == 34);
+	assert(ss.adr == 0310);
+
+	test_cmd.do_command();
+
+	assert(reg[5] == 0304);
+	assert(reg[3] == 34);
+
+}
+
+void test_mode6_fromregtoreg()
+{
+	logger(TRACE, "Тест моды 6 вида mov 6(R5), 10(R3)\n");
+	// setup
+	reg[5] = 0312;  // ss
+	reg[3] = 0322;	// dd
+	pc = 01000;
+	w_write(01002, 06);
+	w_write(0320, 34);
+	w_write(01004, 010);
+	w_write(0332, 12);
+
+	Command test_cmd = parse_cmd(0016563);
+
+	assert(dd.val == 12);
+	assert(dd.adr == 0332);
+	assert(ss.val == 34);
+	assert(ss.adr == 0320);
+
+	test_cmd.do_command();
+
+	assert(w_read(0332) == 34); //проверяем прошло ли успешно копирование
+	assert(w_read(0320) == 34);
+
+	assert(reg[3] == 0322);
+	assert(reg[5] == 0312);
 }

@@ -34,6 +34,18 @@ void do_add()
 	logger(MORE_DEBUG, "---AFTER OPERATION ADD:dd.adr:%o, dd.val:%o, ss.val:%o, w.adr:%o, b.adr:%o, reg:%o---\n", dd.adr, dd.val, ss.val, w_read(dd.adr), b_read(dd.adr), reg[dd.adr]);
 }
 
+void do_clr()
+{
+	if(B_or_W)
+		w_write(dd.adr, 0);
+	else
+		b_write(dd.adr, 0);
+	
+	flag_C = 0;
+	flag_N = 0;
+	flag_Z = 1;
+}
+
 void do_sob()
 {
 	if(--reg[reg_num.adr] > 0)
@@ -98,4 +110,19 @@ void do_bpl() // if plus
 {
 	if(flag_N == 0)
 		do_br();
+}
+
+void do_jsr()
+{
+	sp -= 2;
+	w_write(sp, reg[reg_num.adr]);
+	reg[reg_num.adr] = pc;
+	pc = dd.adr + 2; //+2, т.к. комманда jsr занимает 2 слова, из-за чего dd.adr на 2 байта меньше, чем должен быть(в 6 моде к pc +2 только после операции)
+}
+
+void do_rts()
+{
+	pc = reg[reg_num.adr];
+	reg[reg_num.adr] = w_read(sp);
+	sp += 2;
 }

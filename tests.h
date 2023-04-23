@@ -30,6 +30,8 @@ void test_mode2_fromreg();
 
 void test_mode2_fromregtoreg();
 
+void test_mode2_workwithsp();
+
 void test_mode3_toreg();
 
 void test_mode3_fromreg();
@@ -42,8 +44,16 @@ void test_mode4_fromreg();
 
 void test_mode4_fromregtoreg();
 
+void test_mode4_workwithsp();
+
 void test_mode5_toreg();
 
 void test_mode5_fromreg();
 
 void test_mode5_fromregtoreg();
+
+void test_mode6_toreg();
+
+void test_mode6_fromreg();
+
+void test_mode6_fromregtoreg();

@@ -9,6 +9,7 @@ typedef word address;
 #define REGSIZE 8
 #define MEMSIZE (64*1024)
 #define pc reg[7]
+#define sp reg[6]
 #define OPCD_FOR_PL 255
 #define OPCD_FOR_NEG 255<<8
 #define ostat 0177564

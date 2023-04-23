@@ -18,6 +18,10 @@ Command cmd[] =
 	{0177700, 0105700, "tstb", do_TST, HAS_DD},
 	{0170000, 0120000, "cmpb", do_CMP, HAS_SS | HAS_DD},
 	{0170000, 0020000, "cmp", do_CMP, HAS_SS | HAS_DD},
+	{0177000, 0005000, "clr", do_clr, HAS_DD},
+	{0177000, 0105000, "clrb", do_clr, HAS_DD},
+	{0177000, 0004000, "jsr", do_jsr, HAS_DD | HAS_R},
+	{0177770, 0000200, "rts", do_rts, HAS_R},
 	{0000000, 0000000, "unknown", do_nothing, NO_PARAMS} //Этот элемент массива оставлять в самом конце, т.к. он нужен для выхода из цикла
 };
 
@@ -38,10 +42,8 @@ void run()
 	
 	while(1)
 	{
-		// reg_dump();
 		oper = parse_cmd(read_cmd());
 		oper.do_command();
-		logger(TRACE, "%d %d %d %o", flag_Z, flag_N, flag_C, b_read(ostat));
 		logger(TRACE, "\n");
 	}	
 }
@@ -63,14 +65,26 @@ Command parse_cmd(word w)
 			{	
 				pc += 2;
 				logger(TRACE, "%s ", cmd[i].name);
+				
 				if((w>>15) & 1)
 					B_or_W = 0;
+				else
+					B_or_W = 1;
+				
 				if((cmd[i].params & HAS_SS) == HAS_SS)
 					ss = get_mr(w>>6);
 				if((cmd[i].params & HAS_DD) == HAS_DD)	
 					dd = get_mr(w);
+				
 				if(cmd[i].params  == (HAS_R | HAS_NN))					
 					sob_init(w);
+				else
+				if((cmd[i].params & HAS_R) == HAS_R && strcmp(cmd[i].name,"rts") == 0)
+					get_r_value(w);
+				else
+				if((cmd[i].params & HAS_R) == HAS_R)
+					get_r_value(w>>6);
+				
 				if(cmd[i].params == HAS_XX)
 					get_XX(w);
 				logger(TRACE, "\n");
@@ -81,8 +95,9 @@ Command parse_cmd(word w)
 
 void reg_dump()
 {
-	for(int i = 0; i < REGSIZE; i++)
+	for(int i = 0; i < REGSIZE-2; i++)
 		logger(TRACE, "R%d:%06o ", i, reg[i]);
+	logger(TRACE,"sp:%06o pc:%06o ", sp, pc);
 	logger(TRACE, "Z:%d C:%d N:%d", flag_Z, flag_C, flag_N);
 	logger(TRACE, "\n");
 }
@@ -92,7 +107,6 @@ Argument get_mr(word w)
 	Argument res;
 	int r = w & 7;      // номер регистра
 	int m = (w>>3) & 7; // номер моды
-	
 	switch(m)
 	{
 	case 0:
@@ -144,6 +158,22 @@ Argument get_mr(word w)
 		check_b_or_w_operation(&res);
 		logger(TRACE, "@-(R%d)+ ", r);
 		break;
+	case 6:
+		if(B_or_W)
+		{
+			res.adr = reg[r] + w_read(pc);
+			check_b_or_w_operation(&res);
+			logger(TRACE, "%d(R%d) ", w_read(pc), r);
+			pc += 2;
+		}
+		else
+		{
+			res.adr = reg[r] + b_read(pc);
+			check_b_or_w_operation(&res);
+			logger(TRACE, "%o(R%d) ", b_read(pc), r);
+			pc += 2;
+		}
+		break;
 	default:
 		logger(ERROR, "\n");
 		logger(ERROR, "Мода %d еще не была реализована!\n", m);
@@ -189,4 +219,9 @@ void get_XX(word w)
 {
 	XX = w;
 	logger(TRACE,"XX:%d to:%o ", XX, pc+2*XX);
+}
+
+void get_r_value(word w)
+{
+	reg_num.adr = w & 7;
 }

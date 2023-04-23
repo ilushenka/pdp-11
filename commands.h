@@ -9,16 +9,6 @@ typedef struct
 	char params;
 } Command;
 
-enum
-{
-	NO_PARAMS,
-	HAS_DD,
-	HAS_SS,
-	HAS_R = 1<<2,
-	HAS_NN = 1<<3,
-	HAS_XX = 1<<4
-}parameters;
-
 void do_halt();
 
 void do_add();
@@ -28,6 +18,8 @@ void do_mov();
 void do_movb();
 
 void do_nothing();
+
+void do_clr();
 
 void do_br();
 
@@ -48,3 +40,8 @@ void do_TST();
 void do_CMP();
 
 void do_sob();
+
+void do_jsr();
+
+void do_rts();
+
