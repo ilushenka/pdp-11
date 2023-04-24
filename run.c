@@ -8,7 +8,7 @@ Command cmd[] =
 	{0177000, 0077000, "sob", do_sob, HAS_R | HAS_NN},
 	{0170000, 0110000, "movb", do_movb, HAS_SS | HAS_DD},
 	{0177400, 0000400, "br", do_br, HAS_XX},
-	{0177000, 0103000, "bcc", do_bcc, HAS_XX},
+	{0177400, 0103000, "bcc", do_bcc, HAS_XX},
 	{0177400, 0103400, "bcs", do_bcs, HAS_XX},
 	{0177400, 0001400, "beq", do_beq, HAS_XX},
 	{0177400, 0100400, "bmi", do_bmi, HAS_XX},
@@ -150,28 +150,18 @@ Argument get_mr(word w)
 		logger(TRACE,"-(R%d) ", r);
 		break;
 	case 5:
-		if(r < 6 && B_or_W == 0) 		//проверка какой именно регистр использован(т.к. для 6 и 7 регистров адреса должны быть четными, а при битовых операциях адрес может меняться на 1) 
-			reg[r] -= 1;
-		else
-			reg[r] -= 2;
+		reg[r] -= 2;
 		res.adr = w_read(reg[r]);
 		check_b_or_w_operation(&res);
 		logger(TRACE, "@-(R%d)+ ", r);
 		break;
 	case 6:
-		if(B_or_W)
 		{
-			res.adr = reg[r] + w_read(pc);
-			check_b_or_w_operation(&res);
-			logger(TRACE, "%d(R%d) ", w_read(pc), r);
-			pc += 2;
-		}
-		else
-		{
-			res.adr = reg[r] + b_read(pc);
-			check_b_or_w_operation(&res);
-			logger(TRACE, "%o(R%d) ", b_read(pc), r);
-			pc += 2;
+		word n = w_read(pc);
+		pc += 2;
+		res.adr = reg[r] + n;
+		check_b_or_w_operation(&res);
+		logger(TRACE, "%o(R%d) ", n, r);
 		}
 		break;
 	default:
@@ -212,7 +202,7 @@ void check_NZ_flags(word res)
 
 void check_C_flag(longword res)
 {	
-	flag_C = (res>>(B_or_W ? 15 : 7)) == 1;
+	flag_C = (res>>(B_or_W ? 16 : 8)) == 1;
 }
 
 void get_XX(word w)
@@ -224,4 +214,5 @@ void get_XX(word w)
 void get_r_value(word w)
 {
 	reg_num.adr = w & 7;
+	logger(TRACE, "R%d", reg_num.adr);
 }

@@ -32,6 +32,8 @@ void all_tests()
 
 	test_mode2_workwithsp();
 	test_mode4_workwithsp();
+	test_sob();
+	test_cmp();
 	
 	mem_clear();
 }
@@ -161,6 +163,32 @@ void test_add()
 	logger(TRACE, "reg[3]:%d, reg[5]:%d\n", reg[3], reg[5]);
 	assert(reg[3] == 46);
 	assert(reg[5] == 34);
+}
+
+void test_sob()
+{
+	logger(TRACE, "Проверка команды sob ");
+	
+	reg[0] = 5;
+	reg[1] = 2;
+	
+	parse_cmd(0077001);
+}
+
+void test_cmp()
+{
+	logger(TRACE, "Проверка работы команды CMP ");
+	
+	reg[0] = 32;
+	reg[1] = 32;
+	
+	parse_cmd(0020001);
+	
+	do_CMP();
+	
+	assert(flag_C == 0);
+	assert(flag_Z == 1); 
+	assert(flag_N == 0);
 }
 
 // тест, что мы разобрали правильно аргументы ss и dd в mov (R5), R3

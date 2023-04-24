@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define ADR_MIN 0
-#define ADR_MAX 65535
+#define ADR_MAX (1024*64)
 
 enum loggernum
 {

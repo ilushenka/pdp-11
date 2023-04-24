@@ -28,7 +28,8 @@ void do_add()
 {
 	logger(MORE_DEBUG, "---BEFORE OPERATION ADD:dd.adr:%o, dd.val:%o, ss.val:%o, w.adr:%o, b.adr:%o---\n", dd.adr, dd.val, ss.val, w_read(dd.adr), b_read(dd.adr));
 	w_write(dd.adr, (ss.val+dd.val));
-	longword res = ss.val + dd.val;
+	longword res = ss.val;
+	res += dd.val;
 	check_NZ_flags((ss.val+dd.val));
 	check_C_flag(res);
 	logger(MORE_DEBUG, "---AFTER OPERATION ADD:dd.adr:%o, dd.val:%o, ss.val:%o, w.adr:%o, b.adr:%o, reg:%o---\n", dd.adr, dd.val, ss.val, w_read(dd.adr), b_read(dd.adr), reg[dd.adr]);
@@ -117,7 +118,7 @@ void do_jsr()
 	sp -= 2;
 	w_write(sp, reg[reg_num.adr]);
 	reg[reg_num.adr] = pc;
-	pc = dd.adr + 2; //+2, т.к. комманда jsr занимает 2 слова, из-за чего dd.adr на 2 байта меньше, чем должен быть(в 6 моде к pc +2 только после операции)
+	pc = dd.adr; //+2, т.к. комманда jsr занимает 2 слова, из-за чего dd.adr на 2 байта меньше, чем должен быть(в 6 моде к pc +2 только после операции)
 }
 
 void do_rts()

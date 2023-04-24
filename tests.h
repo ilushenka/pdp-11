@@ -18,6 +18,10 @@ void test_mov();
 
 void test_add();
 
+void test_cmp();
+
+void test_sob();
+
 void test_mode1_toreg();
 
 void test_mode1_fromreg();
